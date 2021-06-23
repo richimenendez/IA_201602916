@@ -17,9 +17,17 @@ var heuristic_board = [
 var moves = []
 var enemy_moves = []
 // ./ngrok http 3000
-
+// http://luisespino.com/temp/games/reversi/index.php
 function sort_and_clean_moves(){
-  
+  let aux = new Set()
+  for(let item of moves){
+      aux.add(item.spot)
+  }
+  moves = []
+  for (let item of aux){
+    moves.push({spot:item, h:heuristic_board[parseInt(item.split('')[0])][parseInt(item.split('')[1])]})
+  }
+  moves.sort((a,b)=>{if(a.h>b.h)return -1;else return 1})
 }
 
 function find_enemy_moves(){
@@ -30,13 +38,13 @@ function minimax(){
   
 }
 
-function find_move(move,rival,x,y){
+function find_move(move,rival,x,y,board){
   var x2=0,y2=0;
   if(move==0){
     x2=x;
     for(y2=y-1;y2>0;y2--){
       x2--
-        if(og_board[y2][x2]==rival && og_board[y2-1][x2-1]=='2'){
+        if(board[y2][x2]==rival && board[y2-1][x2-1]=='2'){
           return (y2-1)+''+(x2-1) 
         }
       
@@ -44,7 +52,7 @@ function find_move(move,rival,x,y){
   }else if(move==1){
     x2=x;
     for(y2=y-1;y2>0;y2--){
-        if(og_board[y2][x2]==rival && og_board[y2-1][x2]=='2'){
+        if(board[y2][x2]==rival && board[y2-1][x2]=='2'){
           return (y2-1)+''+x2 
         }
     }
@@ -52,7 +60,7 @@ function find_move(move,rival,x,y){
     x2 =x;
     for(y2=y-1;y2>0;y2--){
       x2++
-        if(og_board[y2][x2]==rival && og_board[y2-1][x2+1]=='2'){
+        if(board[y2][x2]==rival && board[y2-1][x2+1]=='2'){
           return (y2-1)+''+(x2+1) 
         }
       
@@ -60,7 +68,7 @@ function find_move(move,rival,x,y){
   }else if(move==3){
     y2=y;
     for(x2=x+1;x2<7;x2++){
-        if(og_board[y2][x2]==rival && og_board[y2][x2+1]=='2'){
+        if(board[y2][x2]==rival && board[y2][x2+1]=='2'){
           return y2+''+(x2+1) 
         }
     }
@@ -68,7 +76,7 @@ function find_move(move,rival,x,y){
     x2 = x;
     for(y2=y+1;y2<7;y2++){
       x2++
-        if(og_board[y2][x2]==rival && og_board[y2+1][x2+1]=='2'){
+        if(board[y2][x2]==rival && board[y2+1][x2+1]=='2'){
           return (y2+1)+''+(x2+1) 
         }
       
@@ -76,7 +84,7 @@ function find_move(move,rival,x,y){
   }else if(move==5){
     x2=x;
     for(y2=y+1;y2<7;y2++){
-        if(og_board[y2][x2]==rival && og_board[y2+1][x2]=='2'){
+        if(board[y2][x2]==rival && board[y2+1][x2]=='2'){
           return (y2+1)+''+x2 
         }
     }
@@ -84,7 +92,7 @@ function find_move(move,rival,x,y){
     x2 = x;
     for(y2=y+1;y2<7;y2++){
       x2--
-        if(og_board[y2][x2]==rival && og_board[y2+1][x2-1]=='2'){
+        if(board[y2][x2]==rival && board[y2+1][x2-1]=='2'){
           return (y2+1)+''+(x2-1) 
         }
       
@@ -92,7 +100,7 @@ function find_move(move,rival,x,y){
   }else if(move==7){
     y2=y;
     for(x2=x-1;x2>0;x2--){
-        if(og_board[y2][x2]==rival && og_board[y2][x2-1]=='2'){
+        if(board[y2][x2]==rival && board[y2][x2-1]=='2'){
           return y2+''+(x2-1) 
         }
     }
@@ -107,42 +115,42 @@ function find_spots(turn){
     for(let x = 0; x<8; x++){
       if(og_board[y][x]==turn){
         if(y-1>0 && x-1 >0 && og_board[y-1][x-1]==rival){ // Arriba a la izq
-           spot = find_move(0,rival,x,y) 
+           spot = find_move(0,rival,x,y,og_board) 
            if(spot!='99')
            moves.push({spot:spot,h:heuristic_board[parseInt(spot.split('')[0])][parseInt(spot.split('')[1])]})
         } 
         if(y-1>0  && og_board[y-1][x]==rival){ // Arriba 
-           spot = find_move(1,rival,x,y)
+           spot = find_move(1,rival,x,y,og_board)
            if(spot!='99')
             moves.push({spot:spot,h:heuristic_board[parseInt(spot.split('')[0])][parseInt(spot.split('')[1])]})
         } 
         if(y-1>0 && x+1 <7 && og_board[y-1][x+1]==rival){ // Arriba Derecha
-          spot = find_move(2,rival,x,y) 
+          spot = find_move(2,rival,x,y,og_board) 
           if(spot!='99')
           moves.push({spot:spot,h:heuristic_board[parseInt(spot.split('')[0])][parseInt(spot.split('')[1])]})
        }
        if( x+1 <7 && og_board[y][x+1]==rival){ // Derecha
-         spot = find_move(3,rival,x,y) 
+         spot = find_move(3,rival,x,y,og_board) 
          if(spot!='99')
          moves.push({spot:spot,h:heuristic_board[parseInt(spot.split('')[0])][parseInt(spot.split('')[1])]})
       }    
       if(y+1< 7 && x+1 <7 && og_board[y+1][x+1]==rival){ // Abajo Derecha
-        spot = find_move(4,rival,x,y) 
+        spot = find_move(4,rival,x,y,og_board) 
         if(spot!='99')
         moves.push({spot:spot,h:heuristic_board[parseInt(spot.split('')[0])][parseInt(spot.split('')[1])]})
      }         
      if(y+1< 7 && og_board[y+1][x]==rival){ // Abajo 
-       spot = find_move(5,rival,x,y) 
+       spot = find_move(5,rival,x,y,og_board) 
        if(spot!='99')
        moves.push({spot:spot,h:heuristic_board[parseInt(spot.split('')[0])][parseInt(spot.split('')[1])]})
     }   
     if(y+1< 7 && x-1 >0 && og_board[y+1][x-1]==rival){ // Abajo Izq
-      spot = find_move(6,rival,x,y) 
+      spot = find_move(6,rival,x,y,og_board) 
       if(spot!='99')
       moves.push({spot:spot,h:heuristic_board[parseInt(spot.split('')[0])][parseInt(spot.split('')[1])]})
    }      
    if(x-1 >0 && og_board[y][x-1]==rival){ // Izquierda
-     spot = find_move(7,rival,x,y) 
+     spot = find_move(7,rival,x,y,og_board) 
      if(spot!='99')
      moves.push({spot:spot,h:heuristic_board[parseInt(spot.split('')[0])][parseInt(spot.split('')[1])]})
   }   
@@ -175,6 +183,9 @@ app.get('/', (req, res) => {
   estado = estado?.split('')
   fill_board(estado)
   find_spots(turno)
+  console.log(moves)
+  console.log("................")
+  sort_and_clean_moves()
   console.log(moves)
   console.log(`El turno es: ${turno}`);
   console.log(`El spot es: ${moves[0].spot}`);
